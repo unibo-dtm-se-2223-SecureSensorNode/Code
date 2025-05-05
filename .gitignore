@@ -1,0 +1,14 @@
+# Escludi file binari compilati
+*.bin
+*.hex
+*.elf
+
+# Escludi file temporanei
+*.tmp
+*.log
+
+# Escludi file generati da Python
+__pycache__/
+*.pyc
+
+# Escludi file di configurazione dell'IDE (li aggiungeremo dopo con precisione)
