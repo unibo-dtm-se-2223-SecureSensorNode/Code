@@ -39,7 +39,7 @@ int main(void)
 
 while (1)	{
 		  	  HAL_GPIO_TogglePin(Green_Led_GPIO_Port, Green_Led_Pin);
-		  	  HAL_Delay(2000);  // 2000 ms delay
+		  	  HAL_Delay(2000);	// Blocking delay: CPU frozen for 2 seconds
 		}
 }
 
