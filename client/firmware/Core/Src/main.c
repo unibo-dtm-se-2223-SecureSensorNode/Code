@@ -38,8 +38,14 @@ int main(void)
 	//const uint32_t interval = 2000;
 
 while (1)	{
-		  	  HAL_GPIO_TogglePin(Green_Led_GPIO_Port, Green_Led_Pin);
-		  	  HAL_Delay(2000);	// Blocking delay: CPU frozen for 2 seconds
+	uint32_t currentTick = HAL_GetTick();
+
+    	if ((currentTick - previousTick) >= interval)	{
+		HAL_GPIO_TogglePin(Green_Led_GPIO_Port, Green_Led_Pin);
+      		previousTick = currentTick;
+    	}
+    // (here you could read a sensor, check a button, etc.)
+  }
 		}
 }
 
