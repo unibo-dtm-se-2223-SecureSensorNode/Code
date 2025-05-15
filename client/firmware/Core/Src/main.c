@@ -58,9 +58,6 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t chip_id = 0;
-HAL_StatusTypeDef status;
-uint32_t last_read_time = 0;
 
 /* USER CODE END 0 */
 
@@ -96,6 +93,20 @@ int main(void)
   MX_USART2_UART_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
+  /* Step 1: Read BMP280 ID (outside superloop) */
+  uint8_t chip_id = 0;
+  HAL_StatusTypeDef status;
+
+  status = HAL_I2C_Mem_Read(&hi2c1, 0xEC, 0xD0, I2C_MEMADD_SIZE_8BIT, &chip_id, 1, HAL_MAX_DELAY);
+
+  if (status == HAL_OK) {
+      char msg[64];
+      snprintf(msg, sizeof(msg), "BMP280 Chip ID: 0x%02X\r\n", chip_id);
+      HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+  } else {
+      char err[] = "Error reading BMP280 ID\r\n";
+      HAL_UART_Transmit(&huart2, (uint8_t*)err, strlen(err), HAL_MAX_DELAY);
+  }
 
   /* USER CODE END 2 */
 
@@ -104,20 +115,6 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  if (HAL_GetTick() - last_read_time >= 2000) {
-	      last_read_time = HAL_GetTick();
-
-	      status = HAL_I2C_Mem_Read(&hi2c1, 0xEC, 0xD0, I2C_MEMADD_SIZE_8BIT, &chip_id, 1, HAL_MAX_DELAY);
-
-	      if (status == HAL_OK) {
-	          char msg[64];
-	          snprintf(msg, sizeof(msg), "BMP280 Chip ID: 0x%02X\r\n", chip_id);
-	          HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-	      } else {
-	          char err[] = "Error reading BMP280 ID\r\n";
-	          HAL_UART_Transmit(&huart2, (uint8_t*)err, strlen(err), HAL_MAX_DELAY);
-	      }
-	  }
 
     /* USER CODE BEGIN 3 */
   }
