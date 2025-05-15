@@ -23,7 +23,7 @@
 #include "gpio.h"
 #include "stdio.h"
 #include "string.h"
-
+#include "bmp280_read.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -58,10 +58,7 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int32_t temperature = 0;
-uint32_t pressure = 0;
-HAL_StatusTypeDef status;
-uint32_t last_read_time = 0;
+static uint32_t last_read_time = 0;
 
 /* USER CODE END 0 */
 
@@ -105,24 +102,25 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  if (HAL_GetTick() - last_read_time >= 2000) {
-	      last_read_time = HAL_GetTick();
+	  if (HAL_GetTick() - last_read_time >= 2000)
+	  	  {
+	         int32_t temperature = 0;
+	         uint32_t pressure = 0;
+	         HAL_StatusTypeDef status;
 
-	      // Step 3: Read temperature and pressure
-	      status = HAL_I2C_Mem_Read(&hi2c1, 0xEC, 0xFA, I2C_MEMADD_SIZE_8BIT, (uint8_t*)&temperature, 3, HAL_MAX_DELAY);
-	      status |= HAL_I2C_Mem_Read(&hi2c1, 0xEC, 0xF7, I2C_MEMADD_SIZE_8BIT, (uint8_t*)&pressure, 3, HAL_MAX_DELAY);
+	         status = BMP280_ReadTemperatureAndPressure(&hi2c1, &temperature, &pressure);
 
-	      if (status == HAL_OK) {
-	          char msg[64];
-	          snprintf(msg, sizeof(msg), "T(raw): %ld | P(raw): %lu\r\n", (long)temperature, (unsigned long)pressure);
-	          HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-	      } else {
-	          char err[] = "Error reading T/P from BMP280\r\n";
-	          HAL_UART_Transmit(&huart2, (uint8_t*)err, strlen(err), HAL_MAX_DELAY);
-	      }
-	  }
+	         if (status == HAL_OK) {
+	             char msg[64];
+	             snprintf(msg, sizeof(msg), "T(raw): %ld | P(raw): %lu\r\n", temperature, pressure);
+	             HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+	         } else {
+	             char err[] = "BMP280 read error\r\n";
+	             HAL_UART_Transmit(&huart2, (uint8_t*)err, strlen(err), HAL_MAX_DELAY);
+	         }
 
-
+	         last_read_time = HAL_GetTick();
+	  	  }
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
