@@ -26,6 +26,8 @@
 #include "bmp280_read.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+/* Global flag updated by SysTick_Handler */
+volatile uint8_t tick_1s_elapsed = 0;
 
 /* USER CODE END Includes */
 
@@ -58,7 +60,6 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-static uint32_t last_read_time = 0;
 
 /* USER CODE END 0 */
 
@@ -102,25 +103,25 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  if (HAL_GetTick() - last_read_time >= 2000)
-	  	  {
-	         int32_t temperature = 0;
-	         uint32_t pressure = 0;
-	         HAL_StatusTypeDef status;
+	  if (tick_1s_elapsed) {
+	      tick_1s_elapsed = 0;  // Reset the flag
 
-	         status = BMP280_ReadTemperatureAndPressure(&hi2c1, &temperature, &pressure);
+	      int32_t temperature = 0;
+	      uint32_t pressure = 0;
+	      HAL_StatusTypeDef status;
 
-	         if (status == HAL_OK) {
-	             char msg[64];
-	             snprintf(msg, sizeof(msg), "T(raw): %ld | P(raw): %lu\r\n", temperature, pressure);
-	             HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-	         } else {
-	             char err[] = "BMP280 read error\r\n";
-	             HAL_UART_Transmit(&huart2, (uint8_t*)err, strlen(err), HAL_MAX_DELAY);
-	         }
+	      status = BMP280_ReadTemperatureAndPressure(&hi2c1, &temperature, &pressure);
 
-	         last_read_time = HAL_GetTick();
-	  	  }
+	      if (status == HAL_OK) {
+	          char msg[64];
+	          snprintf(msg, sizeof(msg), "T(raw): %ld | P(raw): %lu\r\n", temperature, pressure);
+	          HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+	      } else {
+	          char err[] = "BMP280 read error\r\n";
+	          HAL_UART_Transmit(&huart2, (uint8_t*)err, strlen(err), HAL_MAX_DELAY);
+	      }
+	  }
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

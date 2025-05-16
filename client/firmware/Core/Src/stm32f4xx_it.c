@@ -26,7 +26,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
-
+extern volatile uint8_t tick_1s_elapsed;
 /* USER CODE END TD */
 
 /* Private define ------------------------------------------------------------*/
@@ -187,12 +187,15 @@ void SysTick_Handler(void)
   /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();
   /* USER CODE BEGIN SysTick_IRQn 1 */
-	static uint32_t count = 0;
-	if (++count >= 2000)    {
-		HAL_GPIO_TogglePin(Green_Led_GPIO_Port, Green_Led_Pin);
-		count = 0;
-	}
+static uint32_t tick_counter = 0;
+	tick_counter++;
+	if (tick_counter >= 1000) { // 1000 ms = 1 s
+	tick_counter = 0;
+    	tick_1s_elapsed = 1;
 
+	// Blink LED (sentinella)
+	HAL_GPIO_TogglePin(Green_Led_GPIO_Port, Green_Led_Pin);
+  	}
   /* USER CODE END SysTick_IRQn 1 */
 }
 
